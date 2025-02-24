@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Button } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 
 export default function App() {
   const [speed, setSpeed] = useState(""); // en km/h
@@ -53,11 +53,6 @@ export default function App() {
     }
   };
 
-  // Fonction pour nettoyer les entrées utilisateur
-  const sanitizeNumber = (value: string) => {
-    return value.replace(/,/g, ".");
-  };
-
   // Calculer temps nécessaire pour parcourir une distance donnée
   const calculateTime = () => {
     if (!distance) return;
@@ -70,7 +65,7 @@ export default function App() {
     }
 
     if (speedFloat > 0) {
-      const distanceFloat = parseFloat(sanitizeNumber(distance));
+      const distanceFloat = parseFloat(distance);
       setTime(((distanceFloat / speedFloat) * 60).toFixed(2));
     }
   };
@@ -85,27 +80,6 @@ export default function App() {
     const minutes = Math.floor(paceInMinutes);
     const seconds = Math.round((paceInMinutes - minutes) * 60);
     setResult(`Vitesse: ${calculatedSpeed} km/h\nAllure: ${minutes}:${seconds < 10 ? "0" : ""}${seconds} min/km`);
-  };
-
-  // Vider les champs
-  const handleClear = () => {
-    setSpeed("");
-    setPace("");
-    setTime("");
-    setDistance("");
-    setResult("");
-  };
-
-  const handlePaceInput = (text: string) => {
-    const cleanedText = text.replace(/[^0-9]/g, "");
-    if (cleanedText.length > 4) return;
-
-    let formattedPace = cleanedText;
-    if (cleanedText.length > 2) {
-      formattedPace = `${cleanedText.slice(0, cleanedText.length - 2)}:${cleanedText.slice(-2)}`;
-    }
-    setPace(formattedPace);
-    setLastModified("pace");
   };
 
   return (
@@ -128,47 +102,57 @@ export default function App() {
           placeholder="Allure (min/km)"
           keyboardType="numeric"
           value={pace}
-          onChangeText={handlePaceInput}
+          onChangeText={(text) => { setPace(text); setLastModified("pace"); }}
         />
         <Text style={styles.unit}>min/km</Text>
       </View>
-      <TextInput style={styles.input} placeholder="Temps (min)" keyboardType="numeric" value={time} onChangeText={setTime} />
-      <Button title="Calculer Temps" onPress={calculateTime} />
-      <TextInput style={styles.input} placeholder="Distance (km)" keyboardType="decimal-pad" value={distance} onChangeText={setDistance} />
-      <Button title="Calculer Distance" onPress={calculateDistance} />
-      <Button title="Calculer Vitesse et Allure" onPress={calculateSpeedAndPace} />
+      <View style={styles.row}>
+        <TextInput style={styles.input} placeholder="Temps (min)" keyboardType="numeric" value={time} onChangeText={setTime} />
+        <TouchableOpacity style={styles.actionButton} onPress={calculateTime}>
+          <Text style={styles.buttonText}>Calculer Temps</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.row}>
+        <TextInput style={styles.input} placeholder="Distance (km)" keyboardType="decimal-pad" value={distance} onChangeText={setDistance} />
+        <TouchableOpacity style={styles.actionButton} onPress={calculateDistance}>
+          <Text style={styles.buttonText}>Calculer Distance</Text>
+        </TouchableOpacity>
+      </View>
+      <TouchableOpacity style={styles.actionButton} onPress={calculateSpeedAndPace}>
+        <Text style={styles.switchText}>Calculer Vitesse & Allure</Text>
+      </TouchableOpacity>
       <Text style={styles.result}>{result}</Text>
-      <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
+      <TouchableOpacity style={styles.clearButton} onPress={() => { setSpeed(""); setPace(""); setTime(""); setDistance(""); setResult(""); }}>
         <Text style={styles.switchText}>Clear 🗑️</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    paddingTop: 150,
-    backgroundColor: "#f4f4f4",
+    paddingTop: 80,
+    backgroundColor: "#f8f9fa",
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 15,
     textAlign: "center",
+    color: "#333",
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 10,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginVertical: 5,
+    borderRadius: 8,
+    padding: 12,
     backgroundColor: "#fff",
     flex: 1,
     textAlign: "center",
@@ -179,17 +163,29 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   switchButton: {
-    padding: 10,
+    padding: 12,
     backgroundColor: "#007AFF",
-    borderRadius: 5,
+    borderRadius: 8,
     marginHorizontal: 10,
   },
+  actionButton: {
+    padding: 12,
+    backgroundColor: "#28a745",
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    width: 150
+  },
   clearButton: {
-    padding: 10,
-    backgroundColor: "#FF3B30",
-    borderRadius: 5,
+    marginTop: 20,
+    backgroundColor: "#dc3545",
+    padding: 12,
+    borderRadius: 8,
     alignItems: "center",
-    marginHorizontal: 10,
   },
   switchText: {
     fontSize: 18,
@@ -197,9 +193,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   result: {
-    fontSize: 16,
-    marginTop: 10,
+    fontSize: 18,
+    marginTop: 15,
     fontWeight: "bold",
     textAlign: "center",
+    color: "#333",
   },
 });
