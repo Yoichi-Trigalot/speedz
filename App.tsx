@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
+
+const { width, height } = Dimensions.get("window");
 
 export default function App() {
   const [speed, setSpeed] = useState(""); // en km/h
@@ -9,10 +11,28 @@ export default function App() {
   const [result, setResult] = useState("");
   const [lastModified, setLastModified] = useState("");
 
+  // Remplace "," par "."
+  const sanitizeNumber = (value: string) => {
+    return value.replace(/,/g, ".");
+  };
+
+  // Gérer l'entrée de l'allure avec un pattern x:xx
+  const handlePaceInput = (text: string) => {
+    const cleanedText = text.replace(/[^0-9]/g, "");
+    if (cleanedText.length > 4) return;
+
+    let formattedPace = cleanedText;
+    if (cleanedText.length > 2) {
+      formattedPace = `${cleanedText.slice(0, cleanedText.length - 2)}:${cleanedText.slice(-2)}`;
+    }
+    setPace(formattedPace);
+    setLastModified("pace");
+  };
+
   // Convertir km/h en min/km
   const convertSpeedToPace = () => {
     if (!speed) return;
-    const speedFloat = parseFloat(speed);
+    const speedFloat = parseFloat(sanitizeNumber(speed));
     if (speedFloat === 0) return;
     const paceInMinutes = 60 / speedFloat;
     const minutes = Math.floor(paceInMinutes);
@@ -39,7 +59,7 @@ export default function App() {
   // Calculer distance parcourue
   const calculateDistance = () => {
     if (!time) return;
-    let speedFloat = parseFloat(speed);
+    let speedFloat = parseFloat(sanitizeNumber(speed));
 
     if (!speedFloat && pace) {
       const [minutes, seconds] = pace.split(":").map(Number);
@@ -56,7 +76,7 @@ export default function App() {
   // Calculer temps nécessaire pour parcourir une distance donnée
   const calculateTime = () => {
     if (!distance) return;
-    let speedFloat = parseFloat(speed);
+    let speedFloat = parseFloat(sanitizeNumber(speed));
 
     if (!speedFloat && pace) {
       const [minutes, seconds] = pace.split(":").map(Number);
@@ -83,7 +103,7 @@ export default function App() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Convertisseur Running</Text>
       <View style={styles.row}>
         <TextInput
@@ -102,7 +122,7 @@ export default function App() {
           placeholder="Allure (min/km)"
           keyboardType="numeric"
           value={pace}
-          onChangeText={(text) => { setPace(text); setLastModified("pace"); }}
+          onChangeText={handlePaceInput}
         />
         <Text style={styles.unit}>min/km</Text>
       </View>
@@ -118,7 +138,7 @@ export default function App() {
           <Text style={styles.buttonText}>Calculer Distance</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.actionButton} onPress={calculateSpeedAndPace}>
+      <TouchableOpacity style={styles.calculateButton} onPress={calculateSpeedAndPace}>
         <Text style={styles.switchText}>Calculer Vitesse & Allure</Text>
       </TouchableOpacity>
       <Text style={styles.result}>{result}</Text>
@@ -131,61 +151,74 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
-    paddingTop: 80,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#f4f8ff",
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 15,
+    marginBottom: 20,
     textAlign: "center",
-    color: "#333",
+    color: "#003366",
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 10,
+    width: "100%",
+    marginBottom: 15,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 10,
+    padding: 15,
     backgroundColor: "#fff",
     flex: 1,
     textAlign: "center",
   },
   unit: {
     marginLeft: 10,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
+    color: "#003366",
   },
   switchButton: {
     padding: 12,
-    backgroundColor: "#007AFF",
-    borderRadius: 8,
+    backgroundColor: "#00509E",
+    borderRadius: 10,
     marginHorizontal: 10,
   },
   actionButton: {
     padding: 12,
-    backgroundColor: "#28a745",
-    borderRadius: 8,
+    backgroundColor: "#045cbd",
+    borderRadius: 10,
     marginLeft: 10,
+    width: 165,
+  },
+  calculateButton: {
+    padding: 15,
+    backgroundColor: "#003366",
+    borderRadius: 10,
+    marginTop: 15,
+    width: "100%",
+    alignItems: "center",
   },
   buttonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
-    width: 150
   },
   clearButton: {
     marginTop: 20,
-    backgroundColor: "#dc3545",
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: "#FF3B30",
+    padding: 15,
+    borderRadius: 10,
     alignItems: "center",
+    width: "100%",
   },
   switchText: {
     fontSize: 18,
@@ -193,10 +226,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   result: {
-    fontSize: 18,
-    marginTop: 15,
+    fontSize: 20,
+    marginTop: 20,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#333",
+    color: "#003366",
   },
 });
