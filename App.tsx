@@ -90,6 +90,20 @@ export default function App() {
     }
   };
 
+  // Formater les minutes en Heure minutes
+  const formatTime = (minutes: number) => {
+    if (!minutes) return "0 min";
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = Math.round(minutes % 60);
+
+    if (hours > 0) {
+      return `${hours}h${remainingMinutes < 10 ? "0" : ""}${remainingMinutes}`;
+    } else {
+      return `${remainingMinutes}`;
+    }
+  };
+
   // Calculer vitesse et allure moyennes
   const calculateSpeedAndPace = () => {
     if (!distance || !time) return;
@@ -100,16 +114,18 @@ export default function App() {
     const minutes = Math.floor(paceInMinutes);
     const seconds = Math.round((paceInMinutes - minutes) * 60);
     setResult(`Vitesse: ${calculatedSpeed} km/h\nAllure: ${minutes}:${seconds < 10 ? "0" : ""}${seconds} min/km`);
+    setSpeed("");
+    setPace("");
   };
+  console.log((!distance) || (!pace && !distance))
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Convertisseur Running</Text>
       <View style={styles.row}>
         <TextInput
-          style={styles.input}
-          placeholder="Vitesse (km/h)"
-          keyboardType="numeric"
+          style={styles.inputSpeeds}
+          placeholder="Vitesse"
           value={speed}
           onChangeText={(text) => { setSpeed(text); setLastModified("speed"); }}
         />
@@ -118,27 +134,31 @@ export default function App() {
           <Text style={styles.switchText}>↔</Text>
         </TouchableOpacity>
         <TextInput
-          style={styles.input}
-          placeholder="Allure (min/km)"
-          keyboardType="numeric"
+          style={styles.inputSpeeds}
+          placeholder="Allure"
           value={pace}
           onChangeText={handlePaceInput}
         />
         <Text style={styles.unit}>min/km</Text>
       </View>
+      <View style={styles.rowHour}>
+        {parseFloat(time) > 60 && <Text style={styles.timeUnit}>{formatTime(parseFloat(time))}</Text>}
+      </View>
       <View style={styles.row}>
-        <TextInput style={styles.input} placeholder="Temps (min)" keyboardType="numeric" value={time} onChangeText={setTime} />
-        <TouchableOpacity style={styles.actionButton} onPress={calculateTime}>
+        <TextInput inlineImageLeft='search_icon' style={styles.inputStat} placeholder="Temps (min)" keyboardType="numeric" value={time} onChangeText={setTime} />
+        <Text style={styles.unit}>min</Text>
+        <TouchableOpacity style={[styles.actionButton, !(distance && (pace || speed)) && styles.disabledButton]} onPress={calculateTime} disabled={!(distance && (pace || speed))}>
           <Text style={styles.buttonText}>Calculer Temps</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.row}>
-        <TextInput style={styles.input} placeholder="Distance (km)" keyboardType="decimal-pad" value={distance} onChangeText={setDistance} />
-        <TouchableOpacity style={styles.actionButton} onPress={calculateDistance}>
+        <TextInput style={styles.inputStat} placeholder="Distance (km)" keyboardType="decimal-pad" value={distance} onChangeText={setDistance} />
+        <Text style={styles.unit}>km</Text>
+        <TouchableOpacity style={[styles.actionButton, !(time && (pace || speed)) && styles.disabledButton]} onPress={calculateDistance} disabled={!(time && (pace || speed))}>
           <Text style={styles.buttonText}>Calculer Distance</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.calculateButton} onPress={calculateSpeedAndPace}>
+      <TouchableOpacity style={[styles.calculateButton, !(time && distance) && styles.disabledCalculateButton]} onPress={calculateSpeedAndPace} disabled={!(time && distance)}>
         <Text style={styles.switchText}>Calculer Vitesse & Allure</Text>
       </TouchableOpacity>
       <Text style={styles.result}>{result}</Text>
@@ -156,54 +176,83 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#f4f8ff",
+    width: "100%"
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 80,
     textAlign: "center",
     color: "#003366",
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     width: "100%",
-    marginBottom: 15,
+    marginBottom: 30,
   },
-  input: {
+  rowHour: {
+    flexDirection: "row",
+    width: "100%",
+  },
+  inputSpeeds: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 10,
-    padding: 15,
-    backgroundColor: "#fff",
+    borderRadius: 5,
+    padding: 10,
+    backgroundColor: "#fefefe",
+    minWidth:70,
+    maxWidth:100,
     flex: 1,
-    textAlign: "center",
+  },
+  inputStat: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    backgroundColor: "#fefefe",
+    flex: 1,
+    minWidth: 100
   },
   unit: {
-    marginLeft: 10,
-    fontSize: 18,
+    marginLeft: 5,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#003366",
   },
   switchButton: {
     padding: 12,
     backgroundColor: "#00509E",
-    borderRadius: 10,
+    borderRadius: 5,
     marginHorizontal: 10,
   },
   actionButton: {
-    padding: 12,
+    padding: 10,
     backgroundColor: "#045cbd",
-    borderRadius: 10,
+    borderRadius: 5,
     marginLeft: 10,
     width: 165,
+  },
+  disabledButton: {
+    backgroundColor: "#A0A0A0",
+    opacity: 0.5,
   },
   calculateButton: {
     padding: 15,
     backgroundColor: "#003366",
-    borderRadius: 10,
-    marginTop: 15,
+    borderRadius: 5,
+    marginTop: 10,
+    marginBottom: 20,
+    width: "100%",
+    alignItems: "center",
+  },
+  disabledCalculateButton: {
+    padding: 15,
+    backgroundColor: "#A0A0A0",
+    opacity: 0.5,
+    borderRadius: 5,
+    marginTop: 10,
+    marginBottom: 20,
     width: "100%",
     alignItems: "center",
   },
@@ -228,8 +277,15 @@ const styles = StyleSheet.create({
   result: {
     fontSize: 20,
     marginTop: 20,
+    marginBottom: 20,
     fontWeight: "bold",
     textAlign: "center",
     color: "#003366",
+  },
+  timeUnit: {
+    marginLeft: 10,
+    fontSize: 12,
+    color: "#003366",
+    minWidth: 40
   },
 });
