@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
+import { Image } from "expo-image";
 
 const { width, height } = Dimensions.get("window");
 
@@ -121,7 +122,12 @@ export default function App() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Convertisseur Running</Text>
+      <Image
+        source={require("./assets/background.png")} // Image locale
+        style={styles.background}
+        contentFit="cover" // Évite la déformation
+      />
+      <Text style={styles.title}>🏃🏼‍♂️ SPEEDZ</Text>
       <View style={styles.row}>
         <TextInput
           style={styles.inputSpeeds}
@@ -178,12 +184,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#f4f8ff",
     width: "100%"
   },
+  background: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: -1,
+  },
   title: {
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 80,
     textAlign: "center",
-    color: "#003366",
+    color: "#015a75",
   },
   row: {
     flexDirection: "row",
@@ -222,13 +232,13 @@ const styles = StyleSheet.create({
   },
   switchButton: {
     padding: 12,
-    backgroundColor: "#00509E",
+    backgroundColor: "#0587B1",
     borderRadius: 5,
     marginHorizontal: 10,
   },
   actionButton: {
     padding: 10,
-    backgroundColor: "#045cbd",
+    backgroundColor: "#0587B1",
     borderRadius: 5,
     marginLeft: 10,
     width: 165,
@@ -239,7 +249,7 @@ const styles = StyleSheet.create({
   },
   calculateButton: {
     padding: 15,
-    backgroundColor: "#003366",
+    backgroundColor: "#5c60b5",
     borderRadius: 5,
     marginTop: 10,
     marginBottom: 20,
@@ -263,7 +273,7 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     marginTop: 20,
-    backgroundColor: "#FF3B30",
+    backgroundColor: "#d1102a",
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
